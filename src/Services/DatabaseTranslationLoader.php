@@ -1,8 +1,8 @@
 <?php
 
-namespace Globalsoft\DbTranslations\Services;
+namespace Togrul614\DbTranslations\Services;
 
-use Globalsoft\DbTranslations\Models\Translation;
+use Togrul614\DbTranslations\Models\Translation;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Translation\FileLoader;
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace Globalsoft\DbTranslations\Http\Controllers;
+namespace Togrul614\DbTranslations\Http\Controllers;
 
-use Globalsoft\DbTranslations\Models\Translation;
-use Globalsoft\DbTranslations\Support\LanguageResolver;
+use Togrul614\DbTranslations\Models\Translation;
+use Togrul614\DbTranslations\Support\LanguageResolver;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;

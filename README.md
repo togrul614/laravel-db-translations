@@ -1,58 +1,39 @@
 # Laravel DB Translations
 
-Verilənlər bazasında saxlanılan, admin paneldən idarə olunan tərcümə (translation) meneceri. `trans()` / `__()` / `@lang()` çağırışlarını şəffaf şəkildə fayl-əsaslı tərcümələrlə verilənlər bazasındakı tərcümələrin üzərinə yazaraq birləşdirir, üstəlik ayrıca CRUD admin ekranı təqdim edir.
+[![Latest Version](https://img.shields.io/packagist/v/togrul614/laravel-db-translations.svg)](https://packagist.org/packages/togrul614/laravel-db-translations)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Paket qəsdən minimal saxlanılıb: heç bir CSS framework-ə (Bootstrap/Tailwind/Metronic) və ya JS kitabxanasına (jQuery, DataTables) bağlı deyil. Bütün view-lar `vendor:publish` ilə tam kopyalanıb istənilən admin panelin öz dizaynına uyğunlaşdırıla bilər, ya da sadəcə `layout` konfiqurasiyası ilə mövcud admin layout-unuza qoşula bilər.
+A database-backed translation manager for Laravel admin panels. It transparently overlays your file-based `trans()` / `__()` / `@lang()` translations with values stored in the database, and ships a minimal, framework-agnostic CRUD screen for managing them.
 
-## Tələblər
+The package is intentionally unopinionated about styling: it doesn't depend on Bootstrap, Tailwind, Metronic, jQuery, or DataTables. The published views can be fully copied and restyled to match any admin panel, or simply plugged into your existing layout via a config option.
+
+## Features
+
+- Drop-in override of Laravel's translation loader — no changes needed to existing `trans()` / `__()` / `@lang()` calls
+- Database values take priority over file translations; missing keys fall back to your `lang/*` files
+- Simple CRUD admin screen (index, create, edit, delete) with publishable, unstyled Blade views
+- Per-action authorization via Laravel's `Gate`, compatible with `spatie/laravel-permission` or any Gate-based permission system
+- Configurable list of languages — either a static array or your own `Language` Eloquent model
+- `translations:import` Artisan command to seed the database from existing `lang/*.php` and `lang/*.json` files
+- Per group/locale caching with automatic cache invalidation on save/delete
+
+## Requirements
 
 - PHP 8.1+
-- Laravel 10, 11 və ya 12
-- `languages` massivi/modeli tərəfindən idarə olunan bir dil siyahısı (bax aşağıda **Dillər**)
+- Laravel 10, 11, or 12
+- A list of languages, either static or backed by your own model (see [Languages](#languages))
 
-## Quraşdırma
+## Installation
 
-Paket hələ Packagist-də deyil, GitLab-da (`git.globalhost.az`) saxlanılır. İstifadə edən layihənin `composer.json`-una VCS repository əlavə edin:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "http://git.globalhost.az/globalsoft01/laravel-db-translations.git"
-        }
-    ]
-}
-```
-
-Sonra:
+Install via Composer:
 
 ```bash
-composer require globalsoft/laravel-db-translations
+composer require togrul614/laravel-db-translations
 ```
 
-Laravel-in paket auto-discovery mexanizmi `TranslationsServiceProvider`-i özü qeydiyyatdan keçirəcək.
+Laravel's package auto-discovery registers `TranslationsServiceProvider` automatically.
 
-### Yerli inkişaf üçün (path repository)
-
-Paketi push etməzdən əvvəl lokal test etmək istəyirsinizsə, `path` repository istifadə edin:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../laravel-db-translations"
-        }
-    ]
-}
-```
-
-```bash
-composer require globalsoft/laravel-db-translations:@dev
-```
-
-## Quraşdırmadan sonra
+Then publish and run the config and migration:
 
 ```bash
 php artisan vendor:publish --tag=db-translations-config
@@ -60,67 +41,91 @@ php artisan vendor:publish --tag=db-translations-migrations
 php artisan migrate
 ```
 
-`--tag=db-translations-views` və `--tag=db-translations-lang` isteğe bağlıdır — yalnız view-ları və ya mesajları dəyişmək istəsəniz publish edin.
+`--tag=db-translations-views` and `--tag=db-translations-lang` are optional — only publish these if you want to customize the views or the package's own messages.
 
-## Konfiqurasiya (`config/db-translations.php`)
+## Configuration (`config/db-translations.php`)
 
-| Açar | Nə üçündür |
+| Key | Purpose |
 |---|---|
-| `table` | Cədvəl adı (default `translations`) |
-| `register_routes`, `route_prefix`, `route_name_prefix`, `middleware` | Admin CRUD marşrutlarının qeydiyyatı. Öz marşrutlarınızı yazmaq istəsəniz `register_routes` = `false` edib `routes/web.php`-ı özünüz kopyalayın. |
-| `abilities` | Hər əməliyyat üçün `Gate::denies()` ilə yoxlanılan icazə adı. `spatie/laravel-permission` daxil olmaqla, Laravel Gate-ə qoşulan istənilən icazə sistemi ilə işləyir. Bir əməliyyatı `null` etsəniz, o yoxlama tamamilə keçilir. |
-| `languages` | Tərcümə daxil edilə bilən dillərin siyahısı — ya statik massiv (`['code' => 'az', 'name' => 'Azərbaycan']`), ya da öz `Language` modelinizin class adı (bax aşağıda). |
-| `layout` | Published view-ların `@extends` edəcəyi öz admin layout-unuz (məs. `layouts.backend.master`). `null` olarsa paketin öz minimal, stilsiz layout-u istifadə olunur. |
-| `override_translator` | `true` olduqda `trans()`/`__()`/`@lang()` avtomatik olaraq bazadakı tərcümələri fayl tərcümələrinin üzərinə yazır. |
-| `cache_prefix`, `cache_ttl` | Qrup+dil üzrə keşləmə. |
-| `import_path` | `translations:import` əmrinin skan edəcəyi qovluq (default: `resource_path('lang')`). |
+| `table` | Table name (default `translations`) |
+| `register_routes`, `route_prefix`, `route_name_prefix`, `middleware` | Registration of the admin CRUD routes. Set `register_routes` to `false` to disable them and copy `routes/web.php` into your own app instead. |
+| `abilities` | The permission name checked via `Gate::denies()` for each action. Works with `spatie/laravel-permission` and any Gate-based permission system. Set an action to `null` to skip its check entirely. |
+| `languages` | The list of languages a translation can be entered in — either a static array (`['code' => 'az', 'name' => 'Azərbaycan']`) or the class name of your own `Language` model (see below). |
+| `layout` | The admin layout your published views `@extends` (e.g. `layouts.backend.master`). Leave `null` to use the package's own minimal, unstyled layout. |
+| `override_translator` | When `true`, `trans()` / `__()` / `@lang()` transparently overlay database translations on top of file translations. |
+| `cache_prefix`, `cache_ttl` | Caching per group and locale. |
+| `import_path` | The directory the `translations:import` command scans (default: `resource_path('lang')`). |
 
-### Dillər (`languages`)
+### Languages
 
-Bu layihələrdə çox vaxt artıq öz `Language` modeliniz (dillərin idarəçiliyi üçün) mövcud olur — paket bunu təkrarlamır, sadəcə istifadə edir:
+Most projects already have their own `Language` model for managing available languages — the package doesn't duplicate that, it just uses it:
 
 ```php
 // config/db-translations.php
 'languages' => \App\Models\Language::class,
 ```
 
-Modelinizdə `code` və `name` sütunları, istəyə görə `scopeActive()` (aktiv dilləri filtrləmək üçün) olmalıdır — məhz `addglobal` layihəsindəki `App\Models\Language` modeli bu şərtlərə artıq uyğundur.
+Your model should have `code` and `name` columns, and optionally a `scopeActive()` local scope to filter which languages are selectable when creating a translation.
 
-### İcazələr (`abilities`)
+Alternatively, provide a static array:
 
-Default dəyərlər `addglobal` layihəsindəki konvensiyaya uyğundur (`translations index/create/edit/delete`, `Gate::denies()` vasitəsilə yoxlanılır — bu, `spatie/laravel-permission`-un avtomatik qoşduğu `Gate::before` callback-i ilə işləyir). Başqa admin panel fərqli permission adları istifadə edirsə, sadəcə `abilities` massivini dəyişin.
+```php
+'languages' => [
+    ['code' => 'az', 'name' => 'Azərbaycan'],
+    ['code' => 'en', 'name' => 'English'],
+],
+```
 
-### Dizaynı öz admin panelinizə uyğunlaşdırmaq
+### Authorization (`abilities`)
 
-İki yol var:
+Each admin action is checked with `Gate::denies($ability)`:
 
-1. **Sürətli**: `layout` konfiqurasiyasını öz admin master blade faylınıza yönləndirin (məs. `'layout' => 'layouts.backend.master'`). Paketin index/form view-ları `@section('content')` bloku ilə işləyir, əksər admin layout-ları bunu dəstəkləyir.
-2. **Tam nəzarət**: `php artisan vendor:publish --tag=db-translations-views` ilə view-ları `resources/views/vendor/db-translations/` altına kopyalayın və istədiyiniz kimi (Bootstrap, Tailwind, Metronic və s.) redaktə edin — Laravel avtomatik olaraq bu kopyaları paketin öz view-larından üstün tutacaq.
+```php
+'abilities' => [
+    'index' => 'translations index',
+    'create' => 'translations create',
+    'edit' => 'translations edit',
+    'delete' => 'translations delete',
+],
+```
 
-## İstifadə
+This works out of the box with `spatie/laravel-permission` (via its `Gate::before` callback) or any other package that hooks into Laravel's Gate. Set an action to `null` to disable its check entirely.
 
-Kodda tərcümələri həmişəki kimi çağırın, heç nə dəyişmir:
+### Matching your admin panel's design
+
+There are two ways to fit the CRUD screens into your existing admin panel:
+
+1. **Quick**: point `layout` at your own admin master Blade file (e.g. `'layout' => 'layouts.backend.master'`). The package's index/form views render inside a `@section('content')` block, which most admin layouts already support.
+2. **Full control**: run `php artisan vendor:publish --tag=db-translations-views` to copy the views into `resources/views/vendor/db-translations/` and edit them freely (Bootstrap, Tailwind, Metronic, or anything else) — Laravel automatically prefers these published copies over the package's own views.
+
+## Usage
+
+Call translations exactly as you always have — nothing changes in your application code:
 
 ```php
 trans('frontend.welcome_title');
-__('welcome_title'); // group = '*' (JSON / tək sözlər)
+__('welcome_title'); // group '*' — for JSON / single-word translations
 ```
 
-Mövcud `resources/lang/*` fayllarınızı bazaya köçürmək üçün:
+### Importing existing translation files
+
+To seed the database from your existing `resources/lang/*` files:
 
 ```bash
 php artisan translations:import
 ```
 
-Bu əmr həm `lang/{locale}/{group}.php` fayllarını (`group` kimi), həm də `lang/{locale}.json` fayllarını (`*` qrupu kimi) oxuyub bazaya yazır, mövcud baza qeydlərini üstələmədən (fayl dəyəri yalnız baza dəyəri boş olduqda istifadə olunur).
+This command reads both `lang/{locale}/{group}.php` files (as `group`) and `lang/{locale}.json` files (as the `*` group), and writes them into the database without overwriting existing database values — a file value is only used to fill in a locale that's still empty in the database.
 
-Admin panelə menyu linki əlavə etmək üçün marşrut adlarından istifadə edin:
+### Linking to the admin screen
+
+Use the configured route names to add a menu link:
 
 ```blade
-<a href="{{ route(config('db-translations.route_name_prefix') . 'index') }}">Tərcümələr</a>
+<a href="{{ route(config('db-translations.route_name_prefix') . 'index') }}">Translations</a>
 ```
 
-## Struktur
+## Structure
 
 ```
 src/
@@ -136,3 +141,7 @@ resources/views/{layout,index,form}.blade.php
 resources/lang/{az,en}/messages.php
 routes/web.php
 ```
+
+## License
+
+This package is open-source software licensed under the [MIT license](LICENSE).

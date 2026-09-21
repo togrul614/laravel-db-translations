@@ -1,8 +1,8 @@
 <?php
 
-namespace Globalsoft\DbTranslations\Console\Commands;
+namespace Togrul614\DbTranslations\Console\Commands;
 
-use Globalsoft\DbTranslations\Models\Translation;
+use Togrul614\DbTranslations\Models\Translation;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;

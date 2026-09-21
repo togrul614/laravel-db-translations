@@ -1,6 +1,6 @@
 <?php
 
-namespace Globalsoft\DbTranslations\Support;
+namespace Togrul614\DbTranslations\Support;
 
 use Illuminate\Support\Collection;
 

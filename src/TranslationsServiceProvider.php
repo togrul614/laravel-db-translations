@@ -1,9 +1,9 @@
 <?php
 
-namespace Globalsoft\DbTranslations;
+namespace Togrul614\DbTranslations;
 
-use Globalsoft\DbTranslations\Console\Commands\ImportTranslationsCommand;
-use Globalsoft\DbTranslations\Services\DatabaseTranslationLoader;
+use Togrul614\DbTranslations\Console\Commands\ImportTranslationsCommand;
+use Togrul614\DbTranslations\Services\DatabaseTranslationLoader;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Translation\Translator;
 

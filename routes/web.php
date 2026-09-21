@@ -1,6 +1,6 @@
 <?php
 
-use Globalsoft\DbTranslations\Http\Controllers\TranslationController;
+use Togrul614\DbTranslations\Http\Controllers\TranslationController;
 use Illuminate\Support\Facades\Route;
 
 Route::group([

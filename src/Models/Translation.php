@@ -1,8 +1,8 @@
 <?php
 
-namespace Globalsoft\DbTranslations\Models;
+namespace Togrul614\DbTranslations\Models;
 
-use Globalsoft\DbTranslations\Support\LanguageResolver;
+use Togrul614\DbTranslations\Support\LanguageResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
