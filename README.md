@@ -20,7 +20,7 @@ The package is intentionally unopinionated about styling: it doesn't depend on B
 ## Requirements
 
 - PHP 8.1+
-- Laravel 10, 11, or 12
+- Laravel 10, 11, 12, or 13
 - A list of languages, either static or backed by your own model (see [Languages](#languages))
 
 ## Installation
